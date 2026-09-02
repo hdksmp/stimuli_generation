@@ -9,7 +9,20 @@ import streamlit as st
 # ============================================================
 st.set_page_config(
     page_title="Spectre Input Waveform Generator",
-    layout="centered",
+    layout="wide",
+)
+
+st.markdown(
+    """
+    <style>
+    .block-container {
+        max-width: 1100px;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
 )
 
 st.title("Spectre Input Waveform Generator")
@@ -469,7 +482,7 @@ st.divider()
 # ============================================================
 # Add Net
 # ============================================================
-col_title, col_add = st.columns([8, 1])
+col_title, col_add = st.columns([6, 2])
 
 with col_title:
     st.subheader("Input Nets")
@@ -507,7 +520,7 @@ for index, net in enumerate(
     with st.container(border=True):
 
         title_col, delete_col = st.columns(
-            [8, 1]
+            [6, 2]
         )
 
         with title_col:
@@ -832,9 +845,7 @@ if st.session_state.show_wave:
 
         try:
 
-            times, voltages = get_waveform(
-                net
-            )
+            times, voltages = get_waveform(net)
 
             delay = parse_eng(
                 net["delay"]
@@ -842,16 +853,48 @@ if st.session_state.show_wave:
                 else "0"
             )
 
-            # Delay is added only for plot.
-            # .scs uses delay= parameter.
             plot_times = [
                 t + delay
                 for t in times
             ]
 
+            plot_voltages = voltages.copy()
+
+
+            # ------------------------------------------------
+            # Delay表示
+            #
+            # delay > 0 の場合、
+            # 0 ～ delay までは最初の電圧を維持する
+            # ------------------------------------------------
+            if delay > 0:
+
+                first_voltage = voltages[0]
+
+                plot_times.insert(0, 0.0)
+                plot_voltages.insert(0, first_voltage)
+
+
+            # ------------------------------------------------
+            # 最後の値を少し先まで保持しているように表示
+            #
+            # PWLの場合は最後の時刻の1.1倍まで延長
+            # ------------------------------------------------
+            if net["wave_type"] == "PWL" and len(times) > 0:
+
+                original_last_time = times[-1]
+
+                extended_time = original_last_time * 1.1 + delay
+
+                # 最後の時刻が0の場合にも少しだけ表示できるようにする
+                if extended_time <= plot_times[-1]:
+                    extended_time = plot_times[-1] + 1e-9
+
+                plot_times.append(extended_time)
+
             ax.plot(
                 plot_times,
-                voltages,
+                plot_voltages,
                 marker="o",
                 label=net_name,
             )
