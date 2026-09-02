@@ -373,7 +373,7 @@ def generate_scs(cell_name, nets):
             f"( {target_net} 0 ) "
             f"vsource "
             f"wave = [ {waveform} ] "
-            f'delay="{delay}" '
+            f'delay={delay} '
             f"type = pwl"
         )
 
