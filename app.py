@@ -853,6 +853,9 @@ if st.session_state.show_wave:
                 else "0"
             )
 
+            # ----------------------------------------
+            # Delay applied waveform
+            # ----------------------------------------
             plot_times = [
                 t + delay
                 for t in times
@@ -861,36 +864,55 @@ if st.session_state.show_wave:
             plot_voltages = voltages.copy()
 
 
-            # ------------------------------------------------
-            # Delay表示
-            #
-            # delay > 0 の場合、
-            # 0 ～ delay までは最初の電圧を維持する
-            # ------------------------------------------------
+            # ----------------------------------------
+            # Before delay:
+            # keep the first voltage
+            # ----------------------------------------
             if delay > 0:
 
                 first_voltage = voltages[0]
 
-                plot_times.insert(0, 0.0)
-                plot_voltages.insert(0, first_voltage)
+                plot_times.insert(
+                    0,
+                    0.0,
+                )
+
+                plot_voltages.insert(
+                    0,
+                    first_voltage,
+                )
 
 
-            # ------------------------------------------------
-            # 最後の値を少し先まで保持しているように表示
-            #
-            # PWLの場合は最後の時刻の1.1倍まで延長
-            # ------------------------------------------------
-            if net["wave_type"] == "PWL" and len(times) > 0:
+            # ----------------------------------------
+            # PWL:
+            # extend the final value to
+            # 1.1 x final original time
+            # ----------------------------------------
+            if (
+                net["wave_type"] == "PWL"
+                and len(times) > 0
+            ):
 
                 original_last_time = times[-1]
 
-                extended_time = original_last_time * 1.1 + delay
+                extended_time = (
+                    original_last_time * 1.1
+                    + delay
+                )
 
-                # 最後の時刻が0の場合にも少しだけ表示できるようにする
                 if extended_time <= plot_times[-1]:
-                    extended_time = plot_times[-1] + 1e-9
+                    extended_time = (
+                        plot_times[-1] + 1e-9
+                    )
 
-                plot_times.append(extended_time)
+                plot_times.append(
+                    extended_time
+                )
+
+                plot_voltages.append(
+                    voltages[-1]
+                )
+
 
             ax.plot(
                 plot_times,
@@ -906,6 +928,7 @@ if st.session_state.show_wave:
             st.error(
                 f"{net_name}: {e}"
             )
+
 
     if valid_count:
 
