@@ -9,7 +9,7 @@ import streamlit as st
 # ============================================================
 st.set_page_config(
     page_title="Spectre Input Waveform Generator",
-    layout="wide",
+    layout="centered",
 )
 
 st.title("Spectre Input Waveform Generator")
